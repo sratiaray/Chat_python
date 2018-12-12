@@ -3,25 +3,27 @@
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
+clients = {}
+addresses = {}
 
 def incoming_connections():
     """Configuration des clients entrant - connection"""
     while True:
         client, client_address = SERVER.accept()
         print("%s:%s connected." % client_address)
-        client.send(bytes("Greeting from the cave!")+
-                            "Now type your name and press enter!","utf8")
+        client.send(bytes("Greeting from the cave!Now type your name and press enter!","utf8"))
         addresses[client]=client_address
         Thread(target=handle_client, args=(client,)).start()
 
-def manip_client(client):
+def handle_client(client):
     """manip de la config de la connection d'un seul client""" 
+
     name = client.recv(BUFSIZ).decode('utf8')
     welcome = 'Welcome %s! If you want to quit, type {quit} to exit.' % name
     client.send(bytes(welcome, "utf8"))
-    msg = '%$ has joined the chat!' % name
+    msg = '%s has joined the chat!' % name
     broadcast(bytes(msg,"utf8"))
-    client[client] = name
+    clients[client] = name
 
     while True:
         msg = client.recv(BUFSIZ)
@@ -39,11 +41,9 @@ def broadcast(msg, prefix=""):
     for sock in clients:
         sock.send(bytes(prefix, "utf8")+msg)
 
-clients = {}
-adresses = {}
 
 HOST = ''
-PORT = 3000
+PORT = 33000
 BUFSIZ = 1024
 ADDR = (HOST, PORT)
 SERVER = socket(AF_INET, SOCK_STREAM)
